@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <flow name="error-handler-with-flow-ref">
+        <set-payload value="Sarasa1"/>
+        <flow-ref doc:name="test-error-lib-implSub_Flow" name="flow-with-error"/>
+        <error-handler>
+            <on-error-continue enableNotifications="true" logException="true" type="ANY">
+                <custom-processor class="org.mule.test.integration.exceptions.ErrorHandlingWithFlowRefTestCase$TestProcessorCounter"/>
+                <flow-ref name="flow-modif"/>
+            </on-error-continue>
+        </error-handler>
+    </flow>
+
+    <sub-flow name="flow-with-error">
+        <raise-error type="APP:SOME"/>
+    </sub-flow>
+
+    <flow name="flow-modif">
+        <logger level="ERROR" message="HELLO"/>
+    </flow>
+
+</mule>
