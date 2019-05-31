@@ -15,6 +15,7 @@ import static org.mule.runtime.config.api.LazyComponentInitializer.LAZY_COMPONEN
 import static org.mule.runtime.config.api.SpringXmlConfigurationBuilderFactory.createConfigurationBuilder;
 import static org.mule.test.allure.AllureConstants.ConfigurationComponentLocatorFeature.CONFIGURATION_COMPONENT_LOCATOR;
 import static org.mule.test.allure.AllureConstants.ConfigurationComponentLocatorFeature.ConfigurationComponentLocatorStory.SEARCH_CONFIGURATION;
+
 import org.mule.runtime.api.artifact.Registry;
 import org.mule.runtime.api.component.ComponentIdentifier;
 import org.mule.runtime.api.exception.ErrorTypeRepository;
@@ -61,21 +62,56 @@ public class ErrorHandlerLazyInitTestCase extends AbstractIntegrationTestCase {
   }
 
   @Test
-  public void customErrorTypesShouldDiscovered() {
-    lazyComponentInitializer.initializeComponent(builder().globalName("mainFlow").build());
-
-    ErrorTypeRepository errorTypeRepository = registry.lookupByType(ErrorTypeRepository.class)
-        .orElseThrow(() -> new AssertionError("Cannot access errorTypeRepository"));
-
-    assertApplicationCustomErrorTypes(errorTypeRepository, "APP:ERROR_TYPE_1");
-    assertApplicationCustomErrorTypes(errorTypeRepository, "APP:ERROR_TYPE_2");
+  public void errorTypesShouldBeAllCreatedNoMatterIfComponentsAreEnabledOrNot() {
+    lazyComponentInitializer.initializeComponent(builder().globalName("simpleFlowNoReferences").build());
+    assertApplicationCustomErrorTypes("APP:ERROR_TYPE_1");
+    assertApplicationCustomErrorTypes("APP:ERROR_TYPE_2");
+    assertNotApplicationCustomErrorTypes("OTHER:ERROR_TYPE_1");
   }
 
-  public void assertApplicationCustomErrorTypes(ErrorTypeRepository errorTypeRepository, String errorType) {
+  @Test
+  public void errorTypeDefinedAtErrorHandlerAndDeclaredInANonEnabledFlow() {
+    lazyComponentInitializer.initializeComponent(builder().globalName("mainFlow").build());
+    assertApplicationCustomErrorTypes("APP:ERROR_TYPE_1");
+  }
+
+  @Test
+  public void initializeTwiceErrorTypes() {
+    errorTypeDefinedAtErrorHandlerAndDeclaredInANonEnabledFlow();
+    errorTypeDefinedAtErrorHandlerAndDeclaredInANonEnabledFlow();
+  }
+
+  @Test
+  public void errorMappingDeclaredOnFlowWithoutErrorHandlerRef() {
+    lazyComponentInitializer.initializeComponent(builder().globalName("flowDeclaredErrorMappingErrorType2").build());
+    assertApplicationCustomErrorTypes("APP:ERROR_TYPE_2");
+  }
+
+  @Test
+  public void errorMappingDeclaredOnFlowWithoutRefToErrorHandler() {
+    lazyComponentInitializer.initializeComponent(builder().globalName("flowDeclaredErrorMappingErrorType2").build());
+    assertApplicationCustomErrorTypes("APP:ERROR_TYPE_2");
+
+    lazyComponentInitializer.initializeComponent(builder().globalName("flowDeclaredErrorMappingErrorType2").build());
+    assertApplicationCustomErrorTypes("APP:ERROR_TYPE_2");
+  }
+
+  public void assertApplicationCustomErrorTypes(String errorType) {
+    ErrorTypeRepository errorTypeRepository = getErrorTypeRepository();
+
     Optional<ErrorType> appMyErrorType =
-        errorTypeRepository.getErrorType(ComponentIdentifier.buildFromStringRepresentation(errorType));
+            errorTypeRepository.getErrorType(ComponentIdentifier.buildFromStringRepresentation(errorType));
     assertThat(appMyErrorType, not(empty()));
     assertThat(appMyErrorType.get().getParentErrorType(), equalTo(errorTypeRepository.getAnyErrorType()));
+  }
+
+  private ErrorTypeRepository getErrorTypeRepository() {
+    return registry.lookupByType(ErrorTypeRepository.class)
+            .orElseThrow(() -> new AssertionError("Cannot access errorTypeRepository"));
+  }
+
+  private void assertNotApplicationCustomErrorTypes(String errorType) {
+    assertThat(getErrorTypeRepository().getErrorType(ComponentIdentifier.buildFromStringRepresentation(errorType)), equalTo(empty()));
   }
 
 }
