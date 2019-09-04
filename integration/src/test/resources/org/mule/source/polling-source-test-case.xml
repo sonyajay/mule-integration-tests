@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:ftp="http://www.mulesoft.org/schema/mule/ftp"
+      xmlns:os="http://www.mulesoft.org/schema/mule/os"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+      http://www.mulesoft.org/schema/mule/ftp http://www.mulesoft.org/schema/mule/ftp/current/mule-ftp.xsd
+      http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+
+    <ftp:config name="config">
+        <ftp:connection username="anonymous" password="password" host="localhost" port="${ftpPort}" workingDir="${workingDir}">
+            <reconnection failsDeployment="false"/>
+        </ftp:connection>
+    </ftp:config>
+
+    <flow name="checkTimesListened">
+        <logger level="ERROR" message="Waiting for 5 seconds"/>
+        <expression-component>java!java::lang::Thread::sleep(5000)</expression-component>
+        <os:retrieve objectStore="store" key="timesListened"/>
+        <logger level="ERROR" message="#['Files was listened '++ payload as String ++ ' times.']"/>
+    </flow>
+
+    <flow name="listen-file" initialState="stopped">
+        <ftp:listener config-ref="config" directory=".">
+            <scheduling-strategy>
+                <fixed-frequency frequency="200"/>
+            </scheduling-strategy>
+        </ftp:listener>
+        <logger level="ERROR" message="File listened."/>
+        <os:retrieve objectStore="store" key="timesListened">
+            <os:default-value >#[0 as Number]</os:default-value>
+        </os:retrieve>
+        <os:store objectStore="store" key="timesListened">
+            <os:value >#[payload as Number + 1]</os:value>
+        </os:store>
+    </flow>
+
+    <flow name="write-file">
+        <set-payload value="File Content"/>
+        <ftp:write config-ref="config" path="random.txt"/>
+    </flow>
+
+    <os:object-store name="store"
+                     entryTtl="1"
+                     entryTtlUnit="HOURS"
+                     maxEntries="100"
+                     persistent="false"
+                     expirationInterval="30"
+                     expirationIntervalUnit="MINUTES" />
+
+</mule>
