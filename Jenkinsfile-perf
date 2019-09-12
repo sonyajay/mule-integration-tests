@@ -1,6 +1,8 @@
 Map pipelineParams = [ "mavenSettingsXmlId" : "mule-runtime-maven-settings-MuleSettings",
                        "mavenPomPath" : "performance/pom.xml",
-                       "mavenAdditionalArgs" : "-f performance/pom.xml -Pmicro-benchmark",
+                       "mavenAdditionalArgs" : "-f performance/pom.xml -Pmicro-benchmark -Delasticsearch.url=https://stats.perf.anypoint.mulesoft.com:9443/",
                        "additionalConfigFileProviderList" : [configFile(fileId: "mule-runtime-maven-settings-MuleSettings", variable: "org.mule.maven.client.api.SettingsSupplierFactory.userSettings")] ]
 
-runtimeProjectsBuild(pipelineParams)
+withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'performance-elasticsearch', usernameVariable: 'elasticsearch.user', passwordVariable: 'elasticsearch.password']]) {
+    runtimeProjectsBuild(pipelineParams)
+}
