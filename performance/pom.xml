@@ -259,10 +259,10 @@
                                         <argument>gc</argument>
                                         <!--Number of Iterations-->
                                         <argument>-i</argument>
-                                        <argument>10</argument>
+                                        <argument>1</argument>
                                         <!--Number of Warmup Iterations-->
                                         <argument>-wi</argument>
-                                        <argument>10</argument>
+                                        <argument>1</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
