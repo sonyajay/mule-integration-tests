@@ -279,7 +279,7 @@
                                     <goal>generate-report</goal>
                                 </goals>
                                 <configuration>
-                                    <index>/runtime/jmh/</index>
+                                    <index>/mulesoft-dev-benchmark</index>
                                     <host>${elasticsearch.url}</host>
                                     <userName>${elasticsearch.user}</userName>
                                     <userPassword>${elasticsearch.password}</userPassword>
