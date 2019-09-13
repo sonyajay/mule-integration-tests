@@ -282,8 +282,8 @@
                                     <index>/mulesoft-dev-benchmark</index>
                                     <host>${elasticsearch.url}</host>
                                     <port>${elasticsearch.port}</port>
-                                    <userName>${elasticsearch.user}</userName>
-                                    <userPassword>${elasticsearch.password}</userPassword>
+                                    <userName>${env.ELASTICSEARCH_USER}</userName>
+                                    <userPassword>${env.ELASTICSEARCH_PASS}</userPassword>
                                     <version>${project.version}</version>
                                     <reportPath>${basedir}/target/jmh-result.json</reportPath>
                                 </configuration>

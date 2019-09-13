@@ -1,6 +1,6 @@
 Map pipelineParams = [ "mavenPomPath" : "performance/pom.xml",
                        "mavenAdditionalArgs" : "-f performance/pom.xml -Pmicro-benchmark -Delasticsearch.url=stats.perf.anypoint.mulesoft.com -Delasticsearch.port=9443" ]
 
-withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'performance-elasticsearch', usernameVariable: 'elasticsearch.user', passwordVariable: 'elasticsearch.password']]) {
+withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'performance-elasticsearch', usernameVariable: 'ELASTICSEARCH_USER', passwordVariable: 'ELASTICSEARCH_PASS']]) {
     runtimeProjectsBuild(pipelineParams)
 }
