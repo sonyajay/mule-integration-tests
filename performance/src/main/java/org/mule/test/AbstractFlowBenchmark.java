@@ -202,11 +202,11 @@ public abstract class AbstractFlowBenchmark extends AbstractBenchmark {
 
   @Param({
       "org.mule.runtime.core.internal.processor.strategy.DirectProcessingStrategyFactory",
-//      "org.mule.runtime.core.internal.processor.strategy.ReactorProcessingStrategyFactory",
-//      "org.mule.runtime.core.internal.processor.strategy.ReactorStreamProcessingStrategyFactory",
-//      "org.mule.runtime.core.internal.processor.strategy.ProactorStreamProcessingStrategyFactory",
-//      "org.mule.runtime.core.internal.processor.strategy.WorkQueueProcessingStrategyFactory",
-//      "org.mule.runtime.core.internal.processor.strategy.WorkQueueStreamProcessingStrategyFactory",
+      //      "org.mule.runtime.core.internal.processor.strategy.ReactorProcessingStrategyFactory",
+      //      "org.mule.runtime.core.internal.processor.strategy.ReactorStreamProcessingStrategyFactory",
+      //      "org.mule.runtime.core.internal.processor.strategy.ProactorStreamProcessingStrategyFactory",
+      //      "org.mule.runtime.core.internal.processor.strategy.WorkQueueProcessingStrategyFactory",
+      //      "org.mule.runtime.core.internal.processor.strategy.WorkQueueStreamProcessingStrategyFactory",
   })
   public String processingStrategyFactory;
 
