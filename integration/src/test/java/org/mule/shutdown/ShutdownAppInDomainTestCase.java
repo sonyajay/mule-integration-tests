@@ -8,8 +8,6 @@ package org.mule.shutdown;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mule.runtime.api.message.Message.of;
-import static org.mule.runtime.core.privileged.event.PrivilegedEvent.getCurrentEvent;
 import static org.mule.runtime.http.api.HttpConstants.Method.GET;
 
 import org.mule.functional.junit4.DomainFunctionalTestCase;
@@ -55,7 +53,7 @@ public class ShutdownAppInDomainTestCase extends DomainFunctionalTestCase {
 
     @Override
     public CoreEvent process(CoreEvent event) throws MuleException {
-      requestContextRefs.add(new PhantomReference<>(getCurrentEvent(), new ReferenceQueue<>()));
+      requestContextRefs.add(new PhantomReference<>(event, new ReferenceQueue<>()));
       return event;
     }
   }
