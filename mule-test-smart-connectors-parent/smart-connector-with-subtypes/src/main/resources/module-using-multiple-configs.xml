@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module name="module-using-subtypes"
+        xmlns="http://www.mulesoft.org/schema/mule/module"
+        xmlns:mule="http://www.mulesoft.org/schema/mule/core"
+        xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+        xmlns:http="http://www.mulesoft.org/schema/mule/http"
+        xmlns:oauth="http://www.mulesoft.org/schema/mule/oauth"
+        xmlns:tns="http://www.mulesoft.org/schema/mule/module-using-subtypes"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+           http://www.mulesoft.org/schema/mule/module http://www.mulesoft.org/schema/mule/module/current/mule-module.xsd
+           http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+           http://www.mulesoft.org/schema/mule/oauth http://www.mulesoft.org/schema/mule/oauth/current/mule-oauth.xsd
+           http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+
+    <connection>
+        <property name="host" displayName="host" type="string" defaultValue="localhost" summary="Host for consuming API"/>
+        <property name="port" displayName="port" type="string" defaultValue="80" summary="Port for consuming API"/>
+    </connection>
+
+    <http:request-config name="request-with-proxy-config" doc:externalize="defaultHeaders">
+        <http:request-connection
+                    host="#[vars.host]"
+                    protocol="HTTP"
+                    port="#[vars.port]" doc:externalize="authentication,proxyConfig">
+        </http:request-connection>
+    </http:request-config>
+
+    <!--<oauth:token-manager-config name="tokenManagerConfig" />-->
+
+    <!--<http:request-config name="request-with-proxy-config">-->
+        <!--<http:request-connection host="localhost" port="${oauth.server.port}">-->
+            <!--<http:authentication>-->
+                <!--<oauth:client-credentials-grant-type-->
+                        <!--clientId="${client.id}"-->
+                        <!--clientSecret="${client.secret}"-->
+                        <!--tokenManager="tokenManagerConfig"-->
+                        <!--scopes="${scopes}"-->
+                        <!--tokenUrl="${token.url}"-->
+                        <!--refreshTokenWhen="#[attributes.statusCode == 500]"-->
+                        <!--responseAccessToken="#[payload['access_token']]"-->
+                        <!--responseExpiresIn="#[payload['expires_in']]"-->
+                        <!--doc:externalize="context">-->
+                    <!--<oauth:custom-parameter-extractors>-->
+                        <!--<oauth:parameter-extractor paramName="${custom.param.extractor1}"-->
+                                                   <!--value="#[payload['${custom.param.extractor1}']]"/>-->
+                        <!--<oauth:parameter-extractor paramName="${custom.param.extractor2}"-->
+                                                   <!--value="#[payload['${custom.param.extractor2}']]"/>-->
+                    <!--</oauth:custom-parameter-extractors>-->
+                    <!--&lt;!&ndash;<tls:context>&ndash;&gt;-->
+                        <!--&lt;!&ndash;<tls:trust-store path="ssltest-cacerts.jks" password="changeit"/>&ndash;&gt;-->
+                        <!--&lt;!&ndash;<tls:key-store path="ssltest-keystore.jks" keyPassword="changeit" password="changeit"/>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</tls:context>&ndash;&gt;-->
+                <!--</oauth:client-credentials-grant-type>-->
+            <!--</http:authentication>-->
+        <!--</http:request-connection>-->
+    <!--</http:request-config>-->
+
+    <operation name="request-with-proxy">
+        <parameters>
+            <parameter name="path" type="string"/>
+        </parameters>
+        <body>
+            <http:request config-ref="request-with-proxy-config" path="#[vars.path]" method="GET" />
+        </body>
+        <output type="string"/>
+    </operation>
+</module>

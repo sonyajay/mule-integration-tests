@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:test="http://www.mulesoft.org/schema/mule/test"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+                          http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+                          http://www.mulesoft.org/schema/mule/test http://www.mulesoft.org/schema/mule/test/current/mule-test.xsd">
+
+    <http:listener-config name="HTTP_Listener_config1">
+        <http:listener-connection host="localhost" port="${httpPort1}" />
+    </http:listener-config>
+
+    <source name="mySource">
+        <body>
+            <scheduler>
+                <scheduling-strategy>
+                    <fixed-frequency startDelay="1000000" frequency="1000"/>
+                </scheduling-strategy>
+            </scheduler>
+            <set-payload value="hole"/>
+        </body>
+    </source>
+
+    <source name="mySourceWithError">
+        <body>
+            <scheduler>
+                <scheduling-strategy>
+                    <fixed-frequency startDelay="1000000" frequency="1000"/>
+                </scheduling-strategy>
+            </scheduler>
+            <set-payload value="hole"/>
+            <raise-error type="MULE:ANY"/>
+        </body>
+    </source>
+
+    <source name="mySourceWithErrorAndTry">
+        <body>
+            <scheduler>
+                <scheduling-strategy>
+                    <fixed-frequency startDelay="1000000" frequency="1000"/>
+                </scheduling-strategy>
+            </scheduler>
+            <try>
+                <set-payload value="hole"/>
+                <raise-error type="MULE:ANY"/>
+                <error-handler>
+                    <on-error-continue/>
+                </error-handler>
+            </try>
+        </body>
+    </source>
+
+    <source name="mySourceWithErrorAndTryNotHandled">
+        <body>
+            <scheduler>
+                <scheduling-strategy>
+                    <fixed-frequency startDelay="1000000" frequency="1000"/>
+                </scheduling-strategy>
+            </scheduler>
+            <try>
+                <set-payload value="hole"/>
+                <raise-error type="MULE:ANY"/>
+            </try>
+        </body>
+    </source>
+
+    <source name="httpListener">
+        <body>
+            <http:listener config-ref="HTTP_Listener_config1" path="/" />
+            <set-payload value="hole"/>
+        </body>
+    </source>
+
+
+    <flow name="simpleFlow">
+        <source-ref name="mySource"/>
+        <test:queue name="simpleFlowQueue"/>
+    </flow>
+
+    <!--<flow name="simpleFlowReuse">-->
+        <!--<source-ref name="mySource"/>-->
+        <!--<test:queue name="simpleFlowReuseQueue"/>-->
+    <!--</flow>-->
+
+    <flow name="sourceWithFailureFlow">
+        <source-ref name="mySourceWithError"/>
+        <test:queue name="sourceWithFailureFlowQueue"/>
+    </flow>
+
+    <flow name="sourceWithFailureFlowAndTry">
+        <source-ref name="mySourceWithErrorAndTry"/>
+        <test:queue name="sourceWithFailureFlowAndTryQueue"/>
+    </flow>
+
+    <flow name="sourceWithFailureFlowAndTryNotHandled">
+        <source-ref name="mySourceWithErrorAndTryNotHandled"/>
+        <test:queue name="sourceWithFailureFlowAndTryNotHandledQueue"/>
+    </flow>
+
+    <flow name="httpListenerFlow">
+        <source-ref name="httpListener"/>
+        <logger/>
+    </flow>
+
+    <flow name="httpClientFlow">
+        <http:request url="#['http://localhost:$(vars.port)/']" method="POST"/>
+        <object-to-string-transformer />
+
+    </flow>
+
+    <operation name="fail-raise-error-nested">
+        <parameters>
+            <parameter name="custom" type="boolean" defaultValue="false"/>
+            <parameter name="amount" type="number" defaultValue="3"/>
+        </parameters>
+        <body>
+            <logger />
+        </body>
+        <output type="string"/>
+        <errors>
+            <error type="SMART_CONNECTOR_CUSTOM_ERROR_CONNECTIVITY"/>
+        </errors>
+    </operation>
+
+</mule>
