@@ -45,4 +45,125 @@
         <test:assert expression="#[vars.count == 10000]"/>
     </flow>
 
+    <flow name="wrongExpression">
+        <set-variable variableName="some" value="#[1]"/>
+        <while expression="#[some]">
+            <logger message="Hello"/>
+        </while>
+    </flow>
+
+    <flow name="whileWithError">
+        <set-payload value="#[true]"/>
+        <set-variable variableName="count" value="#[0]"/>
+        <while>
+            <choice>
+                <when expression="#[vars.count == 1]">
+                    <raise-error type="APP:SOME"/>
+                </when>
+                <otherwise>
+                    <set-variable variableName="count" value="#[1]"/>
+                </otherwise>
+            </choice>
+        </while>
+    </flow>
+
+    <flow name="whileWithErrorHandler">
+        <set-payload value="#[true]"/>
+        <set-variable variableName="count" value="#[0]"/>
+        <try>
+        <while>
+            <choice>
+                <when expression="#[vars.count == 1]">
+                    <raise-error type="APP:SOME"/>
+                </when>
+                <otherwise>
+                    <set-variable variableName="count" value="#[1]"/>
+                </otherwise>
+            </choice>
+        </while>
+            <error-handler>
+                <on-error-continue>
+                    <set-payload value="OK"/>
+                </on-error-continue>
+            </error-handler>
+        </try>
+    </flow>
+
+    <flow name="whileWithInnerErrorHandler">
+        <set-payload value="#[true]"/>
+        <set-variable variableName="count" value="#[0]"/>
+        <while>
+            <try>
+                <choice>
+                    <when expression="#[vars.count == 1]">
+                        <raise-error type="APP:SOME"/>
+                    </when>
+                    <otherwise>
+                        <set-variable variableName="count" value="#[1]"/>
+                    </otherwise>
+                </choice>
+                <error-handler>
+                    <on-error-continue>
+                        <set-payload value="#[false]"/>
+                    </on-error-continue>
+                </error-handler>
+            </try>
+        </while>
+    </flow>
+
+    <flow name="infiniteLoop">
+        <set-payload value="#[true]"/>
+        <while>
+            <set-payload value="#[true]"/>
+        </while>
+    </flow>
+
+    <flow name="errorFlow">
+        <raise-error type="APP:SOME"/>
+    </flow>
+
+    <sub-flow name="errorSubFlow">
+        <raise-error type="APP:SOME"/>
+    </sub-flow>
+
+    <flow name="whileWithErrorHandlerAndFlowRef">
+        <set-variable variableName="flowName" value="#[payload]"/>
+        <set-payload value="#[true]"/>
+        <set-variable variableName="count" value="#[0]"/>
+        <try>
+            <while>
+                <choice>
+                    <when expression="#[vars.count == 1]">
+                        <flow-ref name="#[vars.flowName]"/>
+                    </when>
+                    <otherwise>
+                        <set-variable variableName="count" value="#[1]"/>
+                    </otherwise>
+                </choice>
+            </while>
+            <error-handler>
+                <on-error-continue>
+                    <set-payload value="OK"/>
+                </on-error-continue>
+            </error-handler>
+        </try>
+    </flow>
+
+    <flow name="nestedWhiles">
+        <set-variable variableName="multiple5" value="#[false]"/>
+        <set-payload value="#[0]"/>
+        <while expression="#[!vars.multiple5]">
+            <set-variable variableName="multiple2" value="#[false]"/>
+            <while expression="#[!vars.multiple2]">
+                <set-variable variableName="multiple3" value="#[false]"/>
+                <while expression="#[!vars.multiple3]">
+                    <set-payload value="#[payload + 1]"/>
+                    <set-variable variableName="multiple3" value="#[(payload mod 3) == 0]"/>
+                </while>
+                <set-variable variableName="multiple2" value="#[(payload mod 2) == 0]"/>
+            </while>
+            <set-variable variableName="multiple5" value="#[(payload mod 5) == 0]"/>
+        </while>
+    </flow>
+
 </mule>
