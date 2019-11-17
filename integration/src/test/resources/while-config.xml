@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:test="http://www.mulesoft.org/schema/mule/test"
+      xmlns:script="http://www.mulesoft.org/schema/mule/scripting"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+               http://www.mulesoft.org/schema/mule/test http://www.mulesoft.org/schema/mule/test/current/mule-test.xsd
+               http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+
+    <flow name="basicOneExecution">
+        <set-variable variableName="count" value="#[0]"/>
+        <set-payload value="#[true]"/>
+        <while>
+            <set-variable variableName="count" value="#[vars.count + 1]"/>
+            <set-payload value="false"/>
+        </while>
+        <test:assert expression="#[vars.count == 1]"/>
+    </flow>
+
+    <flow name="basicNoExecution">
+        <set-variable variableName="count" value="#[0]"/>
+        <set-payload value="#[false]"/>
+        <while>
+            <set-variable variableName="count" value="#[vars.count + 1]"/>
+            <set-payload value="false"/>
+        </while>
+        <test:assert expression="#[vars.count == 0]"/>
+    </flow>
+
+    <flow name="manyExecutions">
+        <set-variable variableName="count" value="#[payload]"/>
+        <set-payload value="#[1]"/>
+        <while expression="#[vars.count > 0]">
+            <set-payload value="#[payload * vars.count]"/>
+            <set-variable variableName="count" value="#[vars.count - 1]"/>
+        </while>
+    </flow>
+
+    <flow name="volumeExecutions">
+        <set-variable variableName="count" value="#[0]"/>
+        <while expression="#[10000 > vars.count]">
+            <set-variable variableName="count" value="#[vars.count + 1]"/>
+            <set-payload value="false"/>
+        </while>
+        <test:assert expression="#[vars.count == 10000]"/>
+    </flow>
+
+</mule>
