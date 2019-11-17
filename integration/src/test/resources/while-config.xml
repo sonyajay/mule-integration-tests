@@ -166,4 +166,63 @@
         </while>
     </flow>
 
+    <flow name="whileWithInnerForEach">
+        <set-variable variableName="var1" value="#[0]"/>
+        <while expression="#[50 > vars.var1]">
+            <foreach collection="#[1 to 5]">
+                <set-variable variableName="var1" value="#[vars.var1 + payload]"/>
+            </foreach>
+        </while>
+        <set-payload value="#[vars.var1]"/>
+    </flow>
+
+    <flow name="variableScope">
+        <set-payload value="#[3]"/>
+        <while expression="#[payload > 0]">
+            <choice>
+                <when expression="#[payload == 1]">
+                    <set-variable variableName="var1" value="#[vars.var3 + 3]"/>
+                </when>
+                <when expression="#[payload == 2]">
+                    <set-variable variableName="var2" value="#[4]"/>
+                </when>
+                <when expression="#[payload == 3]">
+                    <set-variable variableName="var3" value="#[2]"/>
+                </when>
+            </choice>
+            <set-payload value="#[payload - 1]"/>
+        </while>
+        <test:assert expression="#[vars.var1 == 5]"/>
+        <test:assert expression="#[vars.var2 == 4]"/>
+        <test:assert expression="#[vars.var3 == 2]"/>
+    </flow>
+
+    <flow name="variableScopeWithErrorScenario">
+        <set-payload value="#[3]"/>
+        <try>
+        <while expression="#[payload > 0]">
+            <choice>
+                <when expression="#[payload == 1]">
+                    <raise-error type="APP:SOME"/>
+                </when>
+                <when expression="#[payload == 2]">
+                    <set-variable variableName="var2" value="#[vars.var3 + 3]"/>
+                </when>
+                <when expression="#[payload == 3]">
+                    <set-variable variableName="var3" value="#[2]"/>
+                </when>
+            </choice>
+            <set-payload value="#[payload - 1]"/>
+        </while>
+            <error-handler>
+                <on-error-continue>
+                    <test:assert expression="#[vars.var2 == 5]"/>
+                    <test:assert expression="#[vars.var3 == 2]"/>
+                    <test:assert expression="#[payload == 1]"/>
+                </on-error-continue>
+            </error-handler>
+        </try>
+    </flow>
+
+
 </mule>

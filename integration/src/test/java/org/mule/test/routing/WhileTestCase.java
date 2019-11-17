@@ -116,4 +116,21 @@ public class WhileTestCase extends AbstractIntegrationTestCase {
     CoreEvent event = flowRunner("nestedWhiles").run();
     assertThat(event.getMessage().getPayload().getValue(), is(30));
   }
+
+  @Test
+  public void whileWithInnerForEach() throws Exception {
+    CoreEvent event = flowRunner("whileWithInnerForEach").run();
+    assertThat(event.getMessage().getPayload().getValue(), is(60));
+  }
+
+  @Test
+  public void variableScope() throws Exception {
+    flowRunner("variableScope").run();
+  }
+
+  @Test
+  public void variableScopeWithErrorScenario() throws Exception {
+    flowRunner("variableScopeWithErrorScenario").run();
+  }
+
 }
