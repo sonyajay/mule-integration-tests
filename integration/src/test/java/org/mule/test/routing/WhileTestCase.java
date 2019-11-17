@@ -9,17 +9,13 @@ package org.mule.test.routing;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.rules.ExpectedException.none;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.Ignore;
-import org.junit.rules.ExpectedException;
 import org.mule.functional.api.exception.ExpectedError;
-import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.expression.ExpressionRuntimeException;
-import org.mule.runtime.core.api.processor.Processor;
 import org.mule.test.AbstractIntegrationTestCase;
 
 
@@ -44,7 +40,8 @@ public class WhileTestCase extends AbstractIntegrationTestCase {
   }
 
   private int factorial(int n) {
-    if (n == 0) return 1;
+    if (n == 0)
+      return 1;
     return n * factorial(n - 1);
   }
 
@@ -131,6 +128,12 @@ public class WhileTestCase extends AbstractIntegrationTestCase {
   @Test
   public void variableScopeWithErrorScenario() throws Exception {
     flowRunner("variableScopeWithErrorScenario").run();
+  }
+
+  @Test
+  public void whileInErrorHandler() throws Exception {
+    CoreEvent event = flowRunner("whileInErrorHandler").run();
+    assertThat(event.getMessage().getPayload().getValue(), is(10));
   }
 
 }
