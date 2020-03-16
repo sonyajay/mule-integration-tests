@@ -4,6 +4,7 @@
     xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
     xmlns:http="http://www.mulesoft.org/schema/mule/http"
     xmlns:heisenberg="http://www.mulesoft.org/schema/mule/heisenberg"
+    xmlns:marvel="http://www.mulesoft.org/schema/mule/marvel"
     xmlns:sc="http://www.mulesoft.org/schema/mule/module-using-core"
     xmlns:sc-using-sc="http://www.mulesoft.org/schema/mule/module-using-sc"
     xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
@@ -12,6 +13,7 @@
                http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
                http://www.mulesoft.org/schema/mule/test http://www.mulesoft.org/schema/mule/test/current/mule-test.xsd
                http://www.mulesoft.org/schema/mule/heisenberg http://www.mulesoft.org/schema/mule/heisenberg/current/mule-heisenberg.xsd
+               http://www.mulesoft.org/schema/mule/marvel http://www.mulesoft.org/schema/mule/marvel/current/mule-marvel.xsd
                http://www.mulesoft.org/schema/mule/module-using-core http://www.mulesoft.org/schema/mule/module-using-core/current/mule-module-using-core.xsd
                http://www.mulesoft.org/schema/mule/module-using-sc http://www.mulesoft.org/schema/mule/module-using-sc/current/mule-module-using-sc.xsd
                http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
@@ -39,6 +41,10 @@
             <heisenberg:known-address value="one address" />
         </heisenberg:known-addresses>
     </heisenberg:config>
+
+    <marvel:iron-man-config name="ironMan">
+        <marvel:missile-connection />
+    </marvel:iron-man-config>
 
     <flow name="killFromPayload">
         <heisenberg:kill goodbyeMessage="#[vars.goodbye]" />
@@ -200,6 +206,23 @@
                 <logger/>
             </route>
         </scatter-gather>
+    </flow>
+
+    <flow name="flowWithScatterGatherNonBlockingOperations">
+<!--         <logger level="WARN" message=".. start" />  -->
+        <scatter-gather>
+            <route>
+<!--                 <logger level="WARN" message=".. Route 1 started" /> -->
+                <marvel:fire-missile at="#[payload]" config-ref="ironMan"/>
+<!--                 <logger level="WARN" message=".. Route 1 finished" /> -->
+            </route>
+            <route>
+<!--                 <logger level="WARN" message=".. Route 2 started" /> -->
+                <marvel:fire-missile at="#[payload]" config-ref="ironMan"/>
+<!--                 <logger level="WARN" message=".. Route 2 finished" /> -->
+            </route>
+        </scatter-gather>
+<!--         <logger level="WARN" message=".. finish" />  -->
     </flow>
 
     <flow name="flowWithAsyncScope">

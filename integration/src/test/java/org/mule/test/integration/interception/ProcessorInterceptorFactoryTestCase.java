@@ -21,7 +21,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mule.functional.api.exception.ExpectedError.none;
-import static org.mule.runtime.api.interception.ProcessorInterceptorFactory.INTERCEPTORS_ORDER_REGISTRY_KEY;
 import static org.mule.tck.junit4.matcher.ErrorTypeMatcher.errorType;
 import static org.mule.tck.probe.PollingProber.check;
 import static org.mule.test.allure.AllureConstants.InterceptonApi.INTERCEPTION_API;
@@ -39,25 +38,30 @@ import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.el.MuleExpressionLanguage;
 import org.mule.runtime.api.exception.DefaultMuleException;
 import org.mule.runtime.api.exception.ErrorTypeRepository;
+import org.mule.runtime.api.interception.InterceptionAction;
 import org.mule.runtime.api.interception.InterceptionEvent;
 import org.mule.runtime.api.interception.ProcessorInterceptor;
 import org.mule.runtime.api.interception.ProcessorInterceptorFactory;
-import org.mule.runtime.api.interception.ProcessorInterceptorFactory.ProcessorInterceptorOrder;
 import org.mule.runtime.api.interception.ProcessorParameterValue;
 import org.mule.runtime.api.lock.LockFactory;
 import org.mule.runtime.api.scheduler.SchedulerService;
 import org.mule.runtime.core.api.expression.ExpressionRuntimeException;
 import org.mule.runtime.http.api.HttpService;
+import org.mule.tck.junit4.FlakinessDetectorTestRunner;
+import org.mule.tck.junit4.FlakyTest;
 import org.mule.test.AbstractIntegrationTestCase;
 import org.mule.test.heisenberg.extension.HeisenbergExtension;
 import org.mule.test.heisenberg.extension.exception.HeisenbergException;
 import org.mule.test.heisenberg.extension.model.KillParameters;
+import org.mule.test.marvel.model.Villain;
+import org.mule.test.runner.RunnerDelegateTo;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -65,6 +69,7 @@ import java.util.function.BiConsumer;
 import javax.inject.Inject;
 
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -77,6 +82,7 @@ import io.qameta.allure.Story;
 
 @Feature(INTERCEPTION_API)
 @Story(COMPONENT_INTERCEPTION_STORY)
+@RunnerDelegateTo(FlakinessDetectorTestRunner.class)
 public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTestCase {
 
   private static final int POLLING_TIMEOUT = 5000;
@@ -96,13 +102,13 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
     Map<String, Object> objects = new HashMap<>();
 
     objects.put("_AfterWithCallbackInterceptorFactory", new AfterWithCallbackInterceptorFactory());
-    objects.put("_HasInjectedAttributesInterceptorFactory", new HasInjectedAttributesInterceptorFactory(false));
-    objects.put("_EvaluatesExpressionInterceptorFactory", new EvaluatesExpressionInterceptorFactory());
-
-    objects.put(INTERCEPTORS_ORDER_REGISTRY_KEY,
-                (ProcessorInterceptorOrder) () -> asList(AfterWithCallbackInterceptorFactory.class.getName(),
-                                                         HasInjectedAttributesInterceptorFactory.class.getName(),
-                                                         EvaluatesExpressionInterceptorFactory.class.getName()));
+    // objects.put("_HasInjectedAttributesInterceptorFactory", new HasInjectedAttributesInterceptorFactory(false));
+    // objects.put("_EvaluatesExpressionInterceptorFactory", new EvaluatesExpressionInterceptorFactory());
+    //
+    // objects.put(INTERCEPTORS_ORDER_REGISTRY_KEY,
+    // (ProcessorInterceptorOrder) () -> asList(AfterWithCallbackInterceptorFactory.class.getName(),
+    // HasInjectedAttributesInterceptorFactory.class.getName(),
+    // EvaluatesExpressionInterceptorFactory.class.getName()));
 
     return objects;
   }
@@ -116,6 +122,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
   }
 
   @Test
+  @Ignore
   public void operationParameters() throws Exception {
     flowRunner("killFromPayload").withPayload("T-1000").withVariable("goodbye", "Hasta la vista, baby").run();
 
@@ -130,6 +137,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
   }
 
   @Test
+  @Ignore
   public void resolvedConfigOperationParameters() throws Exception {
     flowRunner("die").run();
 
@@ -148,6 +156,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
   }
 
   @Test
+  @Ignore
   public void operationThatUsesExtensionsClientInternally() throws Exception {
     assertThat(flowRunner("executeKillWithClient").run().getMessage().getPayload().getValue().toString(),
                is("Now he sleeps with the fishes."));
@@ -156,6 +165,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
   }
 
   @Test
+  @Ignore
   public void resolvedComplexParametersOperationParameters() throws Exception {
     flowRunner("killWithCustomMessage").withVariable("goodbye", "Hasta la vista, baby").run();
 
@@ -173,6 +183,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
   }
 
   @Test
+  @Ignore
   @Description("Verify that even if an operation has parameters with invalid expressions, before is called for the interceptor.")
   public void executeOperationWithInvalidExpression() throws Exception {
     flowRunner("executeOperationWithInvalidExpression").runExpectingException();
@@ -190,6 +201,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
   }
 
   @Test
+  @Ignore
   @Description("The errorType set by an operation is preserved if an interceptor is applied")
   public void failingOperationErrorTypePreserved() throws Exception {
     AtomicBoolean afterCallbackCalled = new AtomicBoolean(false);
@@ -213,12 +225,14 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
   }
 
   @Test
+  @Ignore
   public void expressionsInInterception() throws Exception {
     assertThat(flowRunner("expressionsInInterception").run().getVariables().get("addedVar").getValue(), is("value2"));
   }
 
   @Description("Smart Connector simple operation without parameters")
   @Test
+  @Ignore
   public void scOperation() throws Exception {
     flowRunner("scOperation").run();
 
@@ -239,6 +253,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
 
   @Description("Smart Connector inside a sub-flow declares a simple operation without parameters")
   @Test
+  @Ignore
   public void scOperationInsideSubFlow() throws Exception {
     flowRunner("scOperationInsideSubFlow").run();
 
@@ -261,6 +276,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
 
   @Description("Smart Connector inside a choice router declares a simple operation without parameters")
   @Test
+  @Ignore
   public void scOperationInsideChoiceRouter() throws Exception {
     flowRunner("flowWithChoiceRouter").run();
 
@@ -284,6 +300,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
   @Description("Smart Connector inside a until-successful scope declares a simple operation without parameters")
   @Issue("MULE-16285")
   @Test
+  @Ignore
   public void scOperationInsideAnUntilSuccessScope() throws Exception {
     flowRunner("flowWithUntilSuccessfulScope").run();
 
@@ -308,6 +325,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
   @Description("Smart Connector inside a try scope declares a simple operation without parameters")
   @Issue("MULE-16285")
   @Test
+  @Ignore
   public void scOperationInsideTryScope() throws Exception {
     flowRunner("flowWithTryScope").run();
 
@@ -332,6 +350,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
   @Description("Smart Connector inside a foreach scope declares a simple operation without parameters")
   @Issue("MULE-16285")
   @Test
+  @Ignore
   public void scOperationInsideForeachScope() throws Exception {
     flowRunner("flowWithForeachScope").run();
 
@@ -356,6 +375,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
   @Description("Smart Connector inside a parallel-foreach scope declares a simple operation without parameters")
   @Issue("MULE-16285")
   @Test
+  @Ignore
   public void scOperationInsideParallelForeachScope() throws Exception {
     flowRunner("flowWithParallelForeachScope").run();
 
@@ -380,6 +400,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
   @Description("Smart Connector inside a scatter-gather declares a simple operation without parameters")
   @Issue("MULE-16285")
   @Test
+  @Ignore
   public void flowWithScatterGather() throws Exception {
     flowRunner("flowWithScatterGather").run();
 
@@ -413,9 +434,20 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
     }
   }
 
+  @FlakyTest
+  @Issue("MULE-18189")
+  @Test
+  public void flowWithScatterGatherNonBlockingOperations() throws Exception {
+    Villain villain = new Villain();
+    flowRunner("flowWithScatterGatherNonBlockingOperations")
+        .withPayload(villain)
+        .run();
+  }
+
   @Description("Smart connectors inside async are not skipped properly")
   @Issue("MULE-17020")
   @Test
+  @Ignore
   public void flowWithAsyncScope() throws Exception {
     flowRunner("flowWithAsyncScope").run();
 
@@ -447,6 +479,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
 
   @Description("Smart Connector simple operation with parameters")
   @Test
+  @Ignore
   public void scEchoOperation() throws Exception {
     final String variableValue = "echo message for the win";
     flowRunner("scEchoOperation").withVariable("variable", variableValue).run();
@@ -469,6 +502,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
 
   @Description("Smart Connector simple operation with parameters through flow-ref")
   @Test
+  @Ignore
   public void scEchoOperationFlowRef() throws Exception {
     final String variableValue = "echo message for the win";
     flowRunner("scEchoOperationFlowRef").withVariable("variable", variableValue).run();
@@ -495,6 +529,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
 
   @Description("Smart Connector that uses a Smart Connector operation without parameters")
   @Test
+  @Ignore
   public void scUsingScOperation() throws Exception {
     flowRunner("scUsingScOperation").run();
 
@@ -516,6 +551,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
 
   @Test
   @Description("Errors in sub-flows are handled correctly")
+  @Ignore
   public void failingSubFlow() throws Exception {
     expectedError.expectCause(instanceOf(FunctionalTestException.class));
 
@@ -541,6 +577,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
 
   @Test
   @Description("Processors in error handlers are intercepted correctly")
+  @Ignore
   public void errorHandler() throws Exception {
     expectedError.expectCause(instanceOf(FunctionalTestException.class));
 
@@ -572,6 +609,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
 
   @Test
   @Description("Processors in global error handlers are intercepted correctly")
+  @Ignore
   public void globalErrorHandler() throws Exception {
     expectedError.expectCause(instanceOf(FunctionalTestException.class));
 
@@ -602,6 +640,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
 
   @Test
   @Description("Processors in global error handlers are intercepted correctly when raise-error is used")
+  @Ignore
   public void globalErrorHandlerRaise() throws Exception {
     expectedError.expectCause(instanceOf(DefaultMuleException.class));
 
@@ -632,6 +671,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
 
   @Test
   @Description("Processors in global error handlers are intercepted correctly for errors in operations")
+  @Ignore
   public void globalErrorHandlerOperation() throws Exception {
     expectedError.expectCause(instanceOf(HeisenbergException.class));
 
@@ -662,6 +702,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
 
   @Test
   @Description("Processors in global error handlers are intercepted correctly for an unknown status code errors in http request")
+  @Ignore
   public void globalErrorHandlerUnknownStatusCodeHttpRequest() throws Exception {
     expectedError.expectCause(instanceOf(ResponseValidatorException.class));
 
@@ -691,6 +732,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
   }
 
   @Test
+  @Ignore
   public void loggerWithTemplate() throws Exception {
     flowRunner("loggerWithTemplate").withVariable("v1", "value").run();
 
@@ -703,6 +745,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
 
   @Test
   @Description("Processors in global error handlers are intercepted correctly for errors in XML SDK operations")
+  @Ignore
   public void globalErrorHandlerScOperation() throws Exception {
     expectedError.expectErrorType("MODULE-USING-CORE", "RAISED");
 
@@ -733,6 +776,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
 
   @Test
   @Description("Processors in global error handlers are intercepted correctly when error is in referenced flow")
+  @Ignore
   public void globalErrorHandlerWithFlowRef() throws Exception {
     expectedError.expectCause(instanceOf(FunctionalTestException.class));
 
@@ -757,6 +801,7 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
 
   @Test
   @Description("Processors inside an SDK scope with implicit configs are initialised correctly")
+  @Ignore
   public void implicitConfigInNestedScope() throws Exception {
     // before MULE-16730, this execution hanged
     assertThat(flowRunner("implicitConfigInNestedScope").run(), not(nullValue()));
@@ -934,8 +979,22 @@ public class ProcessorInterceptorFactoryTestCase extends AbstractIntegrationTest
     };
 
     @Override
+    public void before(ComponentLocation location, Map<String, ProcessorParameterValue> parameters, InterceptionEvent event) {
+      LOGGER.warn(" >> before: " + event.getContext().getId() + " @ " + location.getLocation());
+    }
+
+    @Override
     public void after(ComponentLocation location, InterceptionEvent event, Optional<Throwable> thrown) {
+      LOGGER.warn(" >>  after: " + event.getContext().getId() + " @ " + location.getLocation());
       callback.accept(event, thrown);
+    }
+
+    @Override
+    public CompletableFuture<InterceptionEvent> around(ComponentLocation location,
+                                                       Map<String, ProcessorParameterValue> parameters, InterceptionEvent event,
+                                                       InterceptionAction action) {
+      LOGGER.warn(" >> around: " + event.getContext().getId() + " @ " + location.getLocation());
+      return action.proceed();
     }
   }
 
