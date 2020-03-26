@@ -355,16 +355,30 @@
     </flow>
 
     <flow name="testFlow">
+        <scatter-gather>
+            <route>
         <foreach>
-            <try>
+            <try >
                 <test:processor throwException="true"/>
                 <error-handler>
                     <on-error-continue>
+                        <logger message="PRE HTTP LISTENER" level="ERROR"/>
+
                         <http:request config-ref="httpRequestConfig" path="/test"/>
+
+                        <logger message="DSP HTTP LISTENER" level="ERROR"/>
+
                     </on-error-continue>
                 </error-handler>
             </try>
+                        <logger message="DSP TRY" level="ERROR"/>
         </foreach>
+                        <logger message="DSP FOREACH" level="ERROR"/>
+            </route>
+            <route>
+                <logger message="OTRA RUTA" level="ERROR"/>
+            </route>
+        </scatter-gather>
     </flow>
 
     <http:request-config name="httpRequestConfig">
