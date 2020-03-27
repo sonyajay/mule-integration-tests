@@ -48,12 +48,13 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import io.qameta.allure.Description;
-import io.qameta.allure.Feature;
-import io.qameta.allure.Story;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Rule;
 import org.junit.Test;
+
+import io.qameta.allure.Description;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Story;
 
 @Feature(CONFIGURATION_COMPONENT_LOCATOR)
 @Story(SEARCH_CONFIGURATION)
@@ -84,7 +85,8 @@ public class LazyInitConfigurationComponentLocatorTestCase extends AbstractInteg
         "org/mule/test/integration/locator/component-locator-os-connector.xml",
         "org/mule/test/integration/locator/component-locator-spring-config.xml",
         "org/mule/test/integration/locator/component-locator-reference-component-models.xml",
-        "org/mule/test/integration/locator/module-with-config-oauth.xml"};
+        "org/mule/test/integration/locator/module-with-config-oauth.xml",
+        "org/mule/test/integration/locator/module-with-config-http-noconfig.xml"};
   }
 
   @Override
@@ -696,6 +698,17 @@ public class LazyInitConfigurationComponentLocatorTestCase extends AbstractInteg
 
 
     assertThat(locator.find(builder().globalName("redeliveryPolicyFlow").build()), is(not(empty())));
+  }
+
+  // @Description("Initialize same flow with redelivery policy configured in a listener, test component should not fail when
+  // initializing the second time")
+  @Test
+  public void xmlSdkOperationWithDefaultConfig() {
+    lazyComponentInitializer.initializeComponent(builder().globalName("RequestWithNoConfig").build());
+    // lazyComponentInitializer.initializeComponent(builder().globalName("redeliveryPolicyFlowRef2").build());
+
+
+    assertThat(locator.find(builder().globalName("RequestWithNoConfig").build()), is(not(empty())));
   }
 
 }
