@@ -83,6 +83,10 @@ public class ProcessorChainRouterTestCase extends AbstractIntegrationTestCase im
   private ExecutableComponent nonBlockingCompositeChainRouter;
 
   @Inject
+  @Named("nonBlockingInFlowRefCompositeChainRouter")
+  private ExecutableComponent nonBlockingInFlowRefCompositeChainRouter;
+
+  @Inject
   @Named("invalidExpressionParamCompositeChainRouter")
   private ExecutableComponent invalidExpressionParamCompositeChainRouter;
 
@@ -213,11 +217,22 @@ public class ProcessorChainRouterTestCase extends AbstractIntegrationTestCase im
   @Issue("MULE-18161")
   @Description("Ensure that app graceful shutdown timeout is not imposed as an operation timeout on MUnit chains.")
   public void nonBlockingCompositeChainRouter() throws Exception {
-    httpServerRule.getSimpleHttpServer().setResponseDelay(RECEIVE_TIMEOUT + 1000);
+    executeProcessorChainWithResponseDelayInHttpRequest(nonBlockingCompositeChainRouter, RECEIVE_TIMEOUT + 100);
+  }
+
+  @Test
+  @Description("Ensure that a flow-ref with non-blocking operation does not hang")
+  public void nonBlockingInFlowRefCompositeChainRouter() throws Exception {
+    executeProcessorChainWithResponseDelayInHttpRequest(nonBlockingInFlowRefCompositeChainRouter, RECEIVE_TIMEOUT + 100);
+  }
+
+  private void executeProcessorChainWithResponseDelayInHttpRequest(ExecutableComponent executableComponent, int delay)
+      throws InterruptedException, ExecutionException {
+    httpServerRule.getSimpleHttpServer().setResponseDelay(delay);
 
     InputEvent event = createInputEvent();
 
-    CompletableFuture<ExecutionResult> completableFuture = nonBlockingCompositeChainRouter.execute(event);
+    CompletableFuture<ExecutionResult> completableFuture = executableComponent.execute(event);
 
     executionResult = completableFuture.get();
     assertThat(executionResult.getEvent(), not(nullValue()));

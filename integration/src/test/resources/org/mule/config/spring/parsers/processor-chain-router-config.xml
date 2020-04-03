@@ -83,6 +83,13 @@
             <http:request method="GET" config-ref="HTTP_Requester_config" path="/" />
         </parsers-test:chain>
     </parsers-test:composite-processor-chain-router>
+    
+    
+    <parsers-test:composite-processor-chain-router name="nonBlockingInFlowRefCompositeChainRouter">
+        <parsers-test:chain>
+            <flow-ref name="httpRequest" />
+        </parsers-test:chain>
+    </parsers-test:composite-processor-chain-router>
 
     <parsers-test:composite-processor-chain-router name="invalidExpressionParamCompositeChainRouter">
         <parsers-test:chain>
@@ -90,6 +97,10 @@
         </parsers-test:chain>
     </parsers-test:composite-processor-chain-router>
 
+	<flow name="httpRequest">
+		<http:request method="GET" config-ref="HTTP_Requester_config" path="/" />
+	</flow>
+	
     <flow name="byPassFlow">
         <set-payload value="#[payload]"/>
     </flow>
