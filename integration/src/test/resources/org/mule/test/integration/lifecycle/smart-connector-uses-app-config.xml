@@ -10,10 +10,12 @@
 
     <!-- The SC config must be defined before the http listener config to manifest the issue -->
     <scuhoac:config name="scConfig"
-        property_port="${port}"
-        property_accessTokenUrl="http://localhost:${port}/oauth/token"
-        property_clientId="cid"
-        property_clientSecret="csecret"/>
+                    property_port="${port}"
+                    property_accessTokenUrl="http://localhost:${port}/oauth/token"
+                    property_clientId="cid"
+                    property_clientSecret="csecret"
+                    property_protocol="HTTP"/>
+
 
     <http:listener-config name="listenerConfig">
         <http:listener-connection host="localhost" port="${port}"/>
@@ -21,12 +23,12 @@
 
     <flow name="request">
         <scuhoac:request-with-oauth-auth-code
-            config-ref="scConfig"
-            path="${path}"/>
+                config-ref="scConfig"
+                path="${path}"/>
     </flow>
     <flow name="listen">
         <http:listener path="${path}" config-ref="listenerConfig"/>
-        <logger />
+        <logger/>
     </flow>
 
     <!-- Dummy support for the OAuth dance -->
@@ -39,11 +41,12 @@
             <http:query-params>
                 #[{'code' : 'myAuthCode'}]
             </http:query-params>
-        </http:request>        
+        </http:request>
     </flow>
+
     <flow name="oauth-token">
         <http:listener path="oauth/token" config-ref="listenerConfig"/>
         <set-payload value="{&quot;access_token&quot;: &quot;theToken&quot;}" mimeType="application/json"/>
-        
+
     </flow>
 </mule>
