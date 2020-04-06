@@ -48,14 +48,11 @@ public class SmartConnectorUsesAppConfigTestCase extends AbstractIntegrationTest
   @Parameterized.Parameter(1)
   public boolean lazyInit;
 
-  @Parameterized.Parameter(2)
-  public SystemProperty lazyInitProperty;
-
   @Parameterized.Parameters(name = "{0}")
   public static Collection<Object[]> data() {
     return asList(new Object[][] {
-            //{"NOT LAZY INIT", false, new SystemProperty(MULE_LAZY_INIT_DEPLOYMENT_PROPERTY, "false")},
-            {"LAZY INIT", true, new SystemProperty("-DdoTestConnectivity", "true")}
+            {"NOT LAZY INIT", false},
+            {"LAZY INIT", true}
     });
   }
 
