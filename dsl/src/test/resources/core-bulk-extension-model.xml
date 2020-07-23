@@ -82,6 +82,16 @@
     <flow name="flowForonError">
         <on-error ref="Attribute"/>
     </flow>
+    <flow name="flowForonErrorContinue">
+        <on-error-continue>
+            <logger/>
+        </on-error-continue>
+    </flow>
+    <flow name="flowForonErrorPropagate">
+        <on-error-propagate>
+            <logger/>
+        </on-error-propagate>
+    </flow>
     <flow name="flowForparallelForeach">
         <parallel-foreach collection="#[payload]" maxConcurrency="2147483647" target="Attribute"
                           targetValue="#[payload]" timeout="9223372036854775807">
