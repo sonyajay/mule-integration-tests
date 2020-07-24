@@ -91,6 +91,7 @@ import java.util.stream.Stream;
 
 import javax.xml.parsers.SAXParserFactory;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -318,6 +319,20 @@ public class ParameterAstTestCase extends AbstractMuleContextTestCase {
 
     ComponentAst heisenbergApprove = optionalFlowRecursivePojo.map(flow -> flow.directChildrenStream().findFirst().get())
         .orElseThrow(() -> new AssertionError("Couldn't find heisenberg approve operation"));
+
+    ComponentParameterAst investmentParameter = heisenbergApprove.getParameter("investment");
+    ComponentAst investmentAst = (ComponentAst) investmentParameter.getValue().getRight();
+    assertThat(investmentAst, not(nullValue()));
+    
+    ComponentParameterAst commercialName = investmentAst.getParameter("commercialName");
+    ComponentParameterAst valuation = investmentAst.getParameter("valuation");
+    ComponentParameterAst carsPerMinute = investmentAst.getParameter("carsPerMinute");
+
+    assertThat(investmentAst.getParameters(), is(not(Matchers.empty())));
+
+    assertThat(commercialName.getValue().getLeft(), is("A1"));
+    assertThat(valuation.getValue().getLeft(), is("100"));
+    assertThat(carsPerMinute.getValue().getLeft(), is("5"));
 
     ComponentParameterAst recursivePojoParameter = heisenbergApprove.getParameter("recursivePojo");
     ComponentAst recursivePojo = (ComponentAst) recursivePojoParameter.getValue().getRight();
