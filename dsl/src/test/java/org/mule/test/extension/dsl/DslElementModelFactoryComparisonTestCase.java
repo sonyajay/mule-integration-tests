@@ -9,10 +9,15 @@ package org.mule.test.extension.dsl;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mule.runtime.app.declaration.api.fluent.ElementDeclarer.newArtifact;
 import static org.mule.runtime.app.declaration.api.fluent.ElementDeclarer.newParameterGroup;
 
+import org.mule.runtime.api.meta.model.config.ConfigurationModel;
 import org.mule.runtime.api.meta.model.operation.OperationModel;
 import org.mule.runtime.api.meta.model.parameter.ParameterModel;
+import org.mule.runtime.app.declaration.api.ArtifactDeclaration;
+import org.mule.runtime.app.declaration.api.ConfigurationElementDeclaration;
 import org.mule.runtime.app.declaration.api.OperationElementDeclaration;
 import org.mule.runtime.app.declaration.api.ParameterValue;
 import org.mule.runtime.app.declaration.api.fluent.ElementDeclarer;
@@ -20,12 +25,26 @@ import org.mule.runtime.app.declaration.api.fluent.ParameterListValue;
 import org.mule.runtime.app.declaration.api.fluent.ParameterObjectValue;
 import org.mule.runtime.ast.api.ComponentAst;
 import org.mule.runtime.config.api.dsl.model.DslElementModel;
+import org.mule.runtime.config.api.dsl.model.XmlDslElementModelConverter;
+import org.mule.runtime.config.api.dsl.processor.ArtifactConfig;
+import org.mule.runtime.config.internal.model.ApplicationModel;
 
+import java.io.StringWriter;
 import java.util.List;
 import java.util.function.Consumer;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public class DslElementModelFactoryComparisonTestCase extends AbstractElementModelTestCase {
 
@@ -52,22 +71,22 @@ public class DslElementModelFactoryComparisonTestCase extends AbstractElementMod
 
   private ParameterValue declareInnerPojo() {
     return ParameterObjectValue.builder()
-        .withParameter(INT_PARAM_NAME, "0")
-        .withParameter(STRING_PRAM_NAME, "zero")
-        .withParameter(LIST_PARAM_NAME, ParameterListValue
-            .builder()
-            .withValue("zero")
-            .withValue("one")
-            .withValue("two")
-            .build())
-        .withParameter(MAP_PARAM_NAME,
-                       ParameterObjectValue
-                           .builder()
-                           .withParameter("0", "zero")
-                           .withParameter("1", "one")
-                           .withParameter("2", "two")
-                           .build())
-        .build();
+            .withParameter(INT_PARAM_NAME, "0")
+            .withParameter(STRING_PRAM_NAME, "zero")
+            .withParameter(LIST_PARAM_NAME, ParameterListValue
+                    .builder()
+                    .withValue("zero")
+                    .withValue("one")
+                    .withValue("two")
+                    .build())
+            .withParameter(MAP_PARAM_NAME,
+                           ParameterObjectValue
+                                   .builder()
+                                   .withParameter("0", "zero")
+                                   .withParameter("1", "one")
+                                   .withParameter("2", "two")
+                                   .build())
+            .build();
   }
 
   private void validateInnerPojo(DslElementModel<?> innerPojoModel) {
@@ -161,38 +180,38 @@ public class DslElementModelFactoryComparisonTestCase extends AbstractElementMod
   public void compareModels() {
     ElementDeclarer values = ElementDeclarer.forExtension("Values");
     ParameterValue complexParameterValue = ParameterObjectValue.builder()
-        .withParameter(COMPLEX_LIST_PARAM_NAME, ParameterListValue
-            .builder()
-            .withValue(declareInnerPojo())
-            .build())
-        .withParameter(COMPLEX_MAP_PARAM_NAME, ParameterObjectValue
-            .builder()
-            .withParameter("0", declareInnerPojo())
-            .withParameter("1", declareInnerPojo())
-            .build())
-        .withParameter(INNER_POJO_PARAM_NAME, declareInnerPojo())
-        .withParameter(INT_PARAM_NAME, "0")
-        .withParameter(STRING_PRAM_NAME, "zero")
-        .withParameter(LIST_PARAM_NAME, ParameterListValue
-            .builder()
-            .withValue("zero")
-            .withValue("one")
-            .withValue("two")
-            .build())
-        .withParameter(MAP_PARAM_NAME, ParameterObjectValue
-            .builder()
-            .withParameter("0", "zero")
-            .withParameter("1", "one")
-            .withParameter("2", "two")
-            .build())
-        .build();
+            .withParameter(COMPLEX_LIST_PARAM_NAME, ParameterListValue
+                    .builder()
+                    .withValue(declareInnerPojo())
+                    .build())
+            .withParameter(COMPLEX_MAP_PARAM_NAME, ParameterObjectValue
+                    .builder()
+                    .withParameter("0", declareInnerPojo())
+                    .withParameter("1", declareInnerPojo())
+                    .build())
+            .withParameter(INNER_POJO_PARAM_NAME, declareInnerPojo())
+            .withParameter(INT_PARAM_NAME, "0")
+            .withParameter(STRING_PRAM_NAME, "zero")
+            .withParameter(LIST_PARAM_NAME, ParameterListValue
+                    .builder()
+                    .withValue("zero")
+                    .withValue("one")
+                    .withValue("two")
+                    .build())
+            .withParameter(MAP_PARAM_NAME, ParameterObjectValue
+                    .builder()
+                    .withParameter("0", "zero")
+                    .withParameter("1", "one")
+                    .withParameter("2", "two")
+                    .build())
+            .build();
 
     OperationElementDeclaration complexActingParameterOperation = values
-        .newOperation(OPERATION_NAME)
-        .withParameterGroup(newParameterGroup()
-            .withParameter(COMPLEX_ACTING_PARAMETER_NAME, complexParameterValue)
-            .getDeclaration())
-        .getDeclaration();
+            .newOperation(OPERATION_NAME)
+            .withParameterGroup(newParameterGroup()
+                                        .withParameter(COMPLEX_ACTING_PARAMETER_NAME, complexParameterValue)
+                                        .getDeclaration())
+            .getDeclaration();
     ComponentAst flow = getAppElement(applicationModel, COMPONENTS_FLOW);
     ComponentAst operationAst = flow.directChildrenStream().findFirst().get();
 
@@ -207,20 +226,20 @@ public class DslElementModelFactoryComparisonTestCase extends AbstractElementMod
   public void repeatedElementsAreNotPopulated() {
     ElementDeclarer values = ElementDeclarer.forExtension("Values");
     ParameterValue complexParameterValue = ParameterObjectValue.builder()
-        .withParameter(LIST_PARAM_NAME, ParameterListValue
-            .builder()
-            .withValue("one")
-            .withValue("one")
-            .withValue("one")
-            .build())
-        .build();
+            .withParameter(LIST_PARAM_NAME, ParameterListValue
+                    .builder()
+                    .withValue("one")
+                    .withValue("one")
+                    .withValue("one")
+                    .build())
+            .build();
 
     OperationElementDeclaration complexActingParameterOperation = values
-        .newOperation(OPERATION_NAME)
-        .withParameterGroup(newParameterGroup()
-            .withParameter(COMPLEX_ACTING_PARAMETER_NAME, complexParameterValue)
-            .getDeclaration())
-        .getDeclaration();
+            .newOperation(OPERATION_NAME)
+            .withParameterGroup(newParameterGroup()
+                                        .withParameter(COMPLEX_ACTING_PARAMETER_NAME, complexParameterValue)
+                                        .getDeclaration())
+            .getDeclaration();
     DslElementModel<OperationModel> declarationDsl = resolve(complexActingParameterOperation);
     assertThat(declarationDsl.getContainedElements(), hasSize(1));
     DslElementModel<?> complexActingParameter = declarationDsl.getContainedElements().get(0);
@@ -231,4 +250,27 @@ public class DslElementModelFactoryComparisonTestCase extends AbstractElementMod
     assertThat(listParam.getContainedElements().toString(), listParam.getContainedElements(), hasSize(3));
   }
 
+  @Test
+  public void configsAreCreatedEqually() throws Exception{
+    final String configName = "with-value-parameter-connection";
+    ElementDeclarer values = ElementDeclarer.forExtension("Values");
+    ConfigurationElementDeclaration configDeclaration = values.newConfiguration("config")
+            .withRefName(configName)
+            .withConnection(
+                    values
+                            .newConnection("with-value-parameter-connection")
+                            .withParameterGroup(
+                                    newParameterGroup().withParameter("channel", "dummyChannel").getDeclaration()
+                            ).getDeclaration())
+            .getDeclaration();
+
+    ArtifactConfig artifactConfig = new ArtifactConfig.Builder()
+            .build();
+
+    ApplicationModel localAppModel = new ApplicationModel(artifactConfig, newArtifact().withGlobalElement(configDeclaration).getDeclaration(),
+                                                          uri -> muleContext.getExecutionClassLoader().getResourceAsStream(uri));
+
+    DslElementModel<ConfigurationModel> declarationDsl = resolve(configDeclaration);
+    DslElementModel<ConfigurationModel> astDsl = resolve(getAppElement(localAppModel, configName));
+  }
 }
