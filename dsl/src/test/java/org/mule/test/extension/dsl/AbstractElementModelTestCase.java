@@ -84,7 +84,7 @@ public abstract class AbstractElementModelTestCase extends MuleArtifactFunctiona
   protected static final int REQUESTER_PATH = 2;
   protected static final int DB_INSERT_PATH = 3;
 
-  private Set<ExtensionModel> extensions;
+  protected Set<ExtensionModel> extensions;
   protected DslResolvingContext dslContext;
   protected DslElementModelFactory modelResolver;
   protected ApplicationModel applicationModel;

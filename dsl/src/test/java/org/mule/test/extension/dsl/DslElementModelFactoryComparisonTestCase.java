@@ -6,6 +6,8 @@
  */
 package org.mule.test.extension.dsl;
 
+import static java.util.Collections.emptyMap;
+import static java.util.Optional.empty;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.Is.is;
@@ -258,7 +260,7 @@ public class DslElementModelFactoryComparisonTestCase extends AbstractElementMod
             .withRefName(configName)
             .withConnection(
                     values
-                            .newConnection("with-value-parameter-connection")
+                            .newConnection("connection")
                             .withParameterGroup(
                                     newParameterGroup().withParameter("channel", "dummyChannel").getDeclaration()
                             ).getDeclaration())
@@ -267,10 +269,13 @@ public class DslElementModelFactoryComparisonTestCase extends AbstractElementMod
     ArtifactConfig artifactConfig = new ArtifactConfig.Builder()
             .build();
 
+    //Generate an ApplicationModel from the declaration to avoid inconsistences between the XML and the declaration.
     ApplicationModel localAppModel = new ApplicationModel(artifactConfig, newArtifact().withGlobalElement(configDeclaration).getDeclaration(),
+                                                          extensions, emptyMap(), empty(),
                                                           uri -> muleContext.getExecutionClassLoader().getResourceAsStream(uri));
 
     DslElementModel<ConfigurationModel> declarationDsl = resolve(configDeclaration);
     DslElementModel<ConfigurationModel> astDsl = resolve(getAppElement(localAppModel, configName));
+    assertThat(declarationDsl.getContainedElements(), equalTo(astDsl.getContainedElements()));
   }
 }
