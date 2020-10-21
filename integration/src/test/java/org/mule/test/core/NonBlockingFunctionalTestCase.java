@@ -16,6 +16,8 @@ import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.security.AbstractAuthenticationFilter;
 import org.mule.runtime.core.api.transaction.Transaction;
 import org.mule.runtime.core.api.transaction.TransactionCoordination;
+import org.mule.tck.junit4.FlakinessDetectorTestRunnerWithParameters.FlakinessDetectorTestRunnerWithParametersFactory;
+import org.mule.tck.junit4.FlakyTest;
 import org.mule.test.AbstractIntegrationTestCase;
 import org.mule.test.runner.RunnerDelegateTo;
 
@@ -24,8 +26,11 @@ import java.util.Collection;
 import org.junit.Test;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 @RunnerDelegateTo(Parameterized.class)
+@UseParametersRunnerFactory(FlakinessDetectorTestRunnerWithParametersFactory.class)
+@FlakyTest(times = 500)
 public class NonBlockingFunctionalTestCase extends AbstractIntegrationTestCase {
 
   @Parameters(name = "{0}")
@@ -183,6 +188,7 @@ public class NonBlockingFunctionalTestCase extends AbstractIntegrationTestCase {
   }
 
   @Test
+  @FlakyTest
   public void foreach() throws Exception {
     flowRunner("foreach").withPayload(asList(new String[] {"1", "2", "3"}, new String[] {"a", "b", "c"})).run();
   }
