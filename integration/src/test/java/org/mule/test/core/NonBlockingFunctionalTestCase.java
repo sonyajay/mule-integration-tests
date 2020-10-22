@@ -30,7 +30,7 @@ import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 @RunnerDelegateTo(Parameterized.class)
 @UseParametersRunnerFactory(FlakinessDetectorTestRunnerWithParametersFactory.class)
-@FlakyTest(times = 500)
+@FlakyTest(times = 100)
 public class NonBlockingFunctionalTestCase extends AbstractIntegrationTestCase {
 
   @Parameters(name = "{0}")
