@@ -25,6 +25,7 @@ import org.mule.runtime.core.privileged.event.BaseEventContext;
 import org.mule.runtime.extension.api.connectivity.oauth.AuthCodeRequest;
 import org.mule.runtime.extension.api.connectivity.oauth.AuthorizationCodeState;
 import org.mule.runtime.extension.api.error.MuleErrors;
+import org.mule.tck.junit4.FlakyTest;
 import org.mule.test.module.extension.oauth.BaseOAuthExtensionTestCase;
 import org.mule.test.oauth.AuthCodeConfig;
 import org.mule.test.oauth.TestOAuthConnection;
@@ -93,6 +94,7 @@ public class OAuthExtensionTestCase extends BaseOAuthExtensionTestCase {
   }
 
   @Test
+  @FlakyTest(times = 10000)
   public void refreshTokenForPagedOperationOnThirdPage() throws Exception {
     receiveAccessTokenAndUserConnection();
     WireMock.reset();

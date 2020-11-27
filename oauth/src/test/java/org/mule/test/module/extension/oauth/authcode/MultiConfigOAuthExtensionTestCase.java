@@ -10,6 +10,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mule.runtime.api.store.ObjectStoreManager.BASE_PERSISTENT_OBJECT_STORE_KEY;
 import org.mule.runtime.api.store.ObjectStore;
+import org.mule.tck.junit4.FlakinessDetectorTestRunner;
+import org.mule.tck.junit4.FlakyTest;
 import org.mule.tck.junit4.rule.DynamicPort;
 import org.mule.test.module.extension.oauth.BaseOAuthExtensionTestCase;
 import org.mule.test.oauth.TestOAuthConnection;
@@ -20,7 +22,9 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mule.test.runner.RunnerDelegateTo;
 
+@RunnerDelegateTo(FlakinessDetectorTestRunner.class)
 public class MultiConfigOAuthExtensionTestCase extends BaseOAuthExtensionTestCase {
 
   public static final String OAUTH_RESOLVED_OWNER = DEFAULT_OWNER_ID + "-oauth";
@@ -40,6 +44,7 @@ public class MultiConfigOAuthExtensionTestCase extends BaseOAuthExtensionTestCas
   }
 
   @Test
+  @FlakyTest(times = 10000)
   public void authorizeAndStartDancingBaby() throws Exception {
     storedOwnerId = OAUTH_RESOLVED_OWNER;
     startDance(callbackPort.getNumber());

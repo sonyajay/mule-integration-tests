@@ -15,7 +15,10 @@ import static org.junit.Assert.assertThat;
 import org.mule.runtime.extension.api.connectivity.oauth.AuthCodeRequest;
 
 import org.junit.Before;
+import org.mule.tck.junit4.FlakinessDetectorTestRunner;
+import org.mule.test.runner.RunnerDelegateTo;
 
+@RunnerDelegateTo(FlakinessDetectorTestRunner.class)
 public class ScopelessOAuthExtensionTestCase extends OAuthExtensionTestCase {
 
   @Override
