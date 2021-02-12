@@ -11,7 +11,11 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mule.functional.services.TestServicesUtils.buildExpressionLanguageServiceFile;
+import static org.mule.functional.services.TestServicesUtils.buildHttpServiceFile;
+import static org.mule.functional.services.TestServicesUtils.buildSchedulerServiceFile;
 import static org.mule.runtime.app.declaration.api.fluent.ElementDeclarer.newArtifact;
+import static org.mule.runtime.core.api.util.FileUtils.unzip;
 import static org.mule.runtime.module.tooling.TestExtensionDeclarationUtils.TEST_EXTENSION_DECLARER;
 import static org.mule.runtime.module.tooling.TestExtensionDeclarationUtils.configurationDeclaration;
 import static org.mule.runtime.module.tooling.TestExtensionDeclarationUtils.connectionDeclaration;
@@ -23,9 +27,15 @@ import org.mule.runtime.app.declaration.api.ConstructElementDeclaration;
 import org.mule.runtime.app.declaration.api.ParameterizedElementDeclaration;
 import org.mule.runtime.app.declaration.api.fluent.ArtifactDeclarer;
 import org.mule.runtime.app.declaration.api.fluent.ElementDeclarer;
+import org.mule.runtime.module.artifact.api.descriptor.BundleDescriptor;
 import org.mule.runtime.module.tooling.api.artifact.DeclarationSession;
 import org.mule.tck.junit4.rule.SystemProperty;
 import org.mule.test.infrastructure.deployment.AbstractFakeMuleServerTestCase;
+import org.mule.test.infrastructure.deployment.FakeMuleServer;
+import org.mule.test.infrastructure.maven.MavenTestUtils;
+
+import java.io.File;
+import java.io.IOException;
 
 import org.junit.After;
 import org.junit.ClassRule;
@@ -62,7 +72,12 @@ public abstract class DeclarationSessionTestCase extends AbstractFakeMuleServerT
   public void setUp() throws Exception {
     ArtifactDeclarer artifactDeclarer = newArtifact();
     declareArtifact(artifactDeclarer);
-    super.setUp();
+
+    muleServer = new FakeMuleServer(muleHome.getRoot().getAbsolutePath(), getCoreExtensions());
+    muleServer.addZippedService(buildSchedulerServiceFile(compilerWorkFolder.newFolder("schedulerService")));
+    muleServer.addZippedService(buildHttpServiceFile(compilerWorkFolder.newFolder("httpService")));
+    muleServer.addZippedService(findWeaveService());
+
     this.session = this.muleServer
         .toolingService()
         .newDeclarationSessionBuilder()
@@ -74,6 +89,19 @@ public abstract class DeclarationSessionTestCase extends AbstractFakeMuleServerT
         .setArtifactDeclaration(artifactDeclarer.getDeclaration())
         .build();
     this.muleServer.start();
+  }
+
+  private File findWeaveService() throws IOException {
+    File mavenArtifact = MavenTestUtils.findMavenArtifact(new BundleDescriptor.Builder()
+        .setGroupId("org.mule.services")
+        .setArtifactId("mule-service-weave")
+        .setVersion("2.4.0-SNAPSHOT")
+        .setClassifier("mule-service")
+        .build());
+
+    File weaveService = compilerWorkFolder.newFolder("weaveService");
+    unzip(mavenArtifact, weaveService);
+    return weaveService;
   }
 
   protected void declareArtifact(ArtifactDeclarer artifactDeclarer) {
